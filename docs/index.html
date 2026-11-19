@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resume Analyzer - PS 41</title>
+<style>
+body{font-family:system-ui,Segoe UI,Arial,sans-serif;max-width:900px;margin:0 auto;padding:24px 16px;color:#1f2937;line-height:1.55}
+h1{margin-bottom:4px}.sub{color:#6b7280;margin-top:0}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid #d1d5db;padding:6px 10px;text-align:left}th{background:#eef2ff}
+img{max-width:100%;border:1px solid #e5e7eb;border-radius:8px;margin:8px 0}
+code,pre{background:#f3f4f6;border-radius:6px}pre{padding:12px;overflow-x:auto}
+a.btn{display:inline-block;background:#111827;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none}
+</style></head><body>
+<h1>📄 Resume Analyzer</h1>
+<p class="sub">LLM Mini Project PS 41 · Virendra Dilip Mahajan · Roll No 41 · ADT23SOCB1322 · LY Core 4</p>
+<p><a class="btn" href="https://github.com/Kmennn/llm-ps41-ADT23SOCB1322">View code on GitHub</a></p>
+
+<h2>Problem</h2>
+<p>Students don't know why their resumes get rejected. This app compares a resume with a job description and returns a <b>match score</b>, <b>matched skills</b>, <b>missing skills</b> and <b>3 tips</b>.</p>
+
+<h2>How it works</h2>
+<ol>
+<li>Upload a resume PDF (text read with PyPDF2) and paste a job description.</li>
+<li>Both go to an LLM with a strict prompt that returns JSON: score, matched skills, missing skills, tips, summary.</li>
+<li>Python checks the JSON (score 0-100, one retry, "A or B" skill rule) and Streamlit shows it with a progress bar.</li>
+</ol>
+<p><b>Model:</b> Qwen2.5-14B-Instruct, served with llama.cpp on an NVIDIA RTX PRO 6000 GPU in the MIT ADT Baramati AI lab. Works with any OpenAI-compatible API (Groq, OpenAI, Ollama).</p>
+
+<h2>Screenshots</h2>
+<img src="1_python_dev_vs_backend.png" alt="Python developer vs backend job: score 85">
+<img src="3_mechanical_vs_backend.png" alt="Mechanical resume vs backend job: score 0">
+
+<h2>Test results</h2>
+<table><tr><th>Resume</th><th>Job description</th><th>Expected</th><th>Score</th></tr>
+<tr><td>Python developer</td><td>Backend developer</td><td>strong</td><td>85</td></tr>
+<tr><td>Python developer</td><td>Frontend (React)</td><td>partial</td><td>30</td></tr>
+<tr><td>Data analyst</td><td>Data analyst</td><td>strong</td><td>85</td></tr>
+<tr><td>Data analyst</td><td>ML engineer</td><td>partial</td><td>65</td></tr>
+<tr><td>Mechanical engineer</td><td>Backend developer</td><td>weak</td><td>0</td></tr></table>
+
+<h2>Run it yourself</h2>
+<p>The app is Python (Streamlit), so it runs on your machine, not on this static page:</p>
+<pre>pip install -r requirements.txt
+set LLM_BASE_URL=http://localhost:11434/v1
+set LLM_MODEL=qwen2.5:14b
+streamlit run app.py</pre>
+</body></html>
