@@ -1,0 +1,1 @@
+Frontend Developer. Required: JavaScript, React, HTML, CSS, TypeScript, REST API integration, Git. Good to have: Next.js, Tailwind, testing with Jest.

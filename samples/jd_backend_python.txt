@@ -1,0 +1,1 @@
+Backend Developer (Fresher). Required: Python, Django or FastAPI, REST APIs, PostgreSQL, Git, Docker. Good to have: AWS, Redis, unit testing with pytest, CI/CD.
