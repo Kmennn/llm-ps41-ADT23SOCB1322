@@ -58,7 +58,7 @@ em.v{font-style:italic;font-weight:500;color:var(--violet)}
 .hero p.lead{font-size:clamp(17px,1.6vw,19px);color:#4a3f6b;max-width:34rem;margin:0 0 32px;text-wrap:pretty}
 .cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .trust{margin-top:34px;display:flex;flex-wrap:wrap;gap:18px;font-size:14px;color:#4a3f6b}
-.trust span{display:inline-flex;align-items:center;gap:6px}
+.trust span{display:inline-flex;align-items:center;gap:8px}.trust span+span::before{content:"";width:4px;height:4px;border-radius:50%;background:#8b7fb0;margin-right:10px}
 
 /* hero preview card */
 .preview{position:relative;border-radius:28px;padding:10px;background:rgb(255 255 255/.35);box-shadow:0 30px 80px -30px rgb(40 25 80/.45),inset 0 0 0 1px rgb(255 255 255/.6)}
@@ -220,9 +220,9 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
         <a class="btn btn-ghost" href="#how">See how it works</a>
       </div>
       <div class="trust">
-        <span>🔒 Resume never stored</span>
-        <span>💸 Free, no sign-up</span>
-        <span>🎓 Built at MIT ADT University</span>
+        <span>Resume never stored</span>
+        <span>Free, no sign-up</span>
+        <span>Built at MIT ADT University</span>
       </div>
     </div>
 
@@ -269,10 +269,10 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
       <p>The model is told to judge like a strict recruiter, and Python checks every answer before you see it.</p>
     </div>
     <ul class="feat">
-      <li class="rv"><div class="ic">◎</div><h3>No invented skills</h3><p>Only facts written in your resume count. If it isn't there, it's missing.</p></li>
-      <li class="rv"><div class="ic">⇄</div><h3>Understands "A or B"</h3><p>"Django or FastAPI" is one requirement. Having either one is enough.</p></li>
-      <li class="rv"><div class="ic">⚖</div><h3>Required beats nice-to-have</h3><p>Missing a bonus skill won't sink a strong resume below 80.</p></li>
-      <li class="rv"><div class="ic">✓</div><h3>Checked output</h3><p>Score clamped to 0-100, exactly 3 tips, and a retry if the model's reply is broken.</p></li>
+      <li class="rv"><h3>No invented skills</h3><p>Only facts written in your resume count. If it isn't there, it's missing.</p></li>
+      <li class="rv"><h3>Understands "A or B"</h3><p>"Django or FastAPI" is one requirement. Having either one is enough.</p></li>
+      <li class="rv"><h3>Required beats nice-to-have</h3><p>Missing a bonus skill won't sink a strong resume below 80.</p></li>
+      <li class="rv"><h3>Checked output</h3><p>Score clamped to 0-100, exactly 3 tips, and a retry if the model's reply is broken.</p></li>
     </ul>
   </div>
 </section>
@@ -312,11 +312,10 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
             <label class="l" for="resume">Resume</label>
             <div class="drop" id="drop">
               <input type="file" id="resume" name="resume" accept=".pdf,.txt">
-              <span class="big">📄</span>
-              <strong>Drop your PDF here or click to choose</strong>
+                            <strong>Drop your PDF here or click to choose</strong>
               <small>PDF or TXT, up to 5 MB</small>
             </div>
-            <div class="file" id="file"><span>✓</span><span id="fname"></span></div>
+            <div class="file" id="file"><span id="fname"></span></div>
           </div>
           <div class="row">
             <label class="l" for="jd">Job description</label>
@@ -334,7 +333,7 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
 
       <div class="panel out">
         <div class="panel-in" style="min-height:500px">
-          <div class="empty" id="empty"><span class="big">✨</span><h3 style="font-size:22px">Your results appear here</h3><p style="margin:0;max-width:22rem">Score, matched and missing skills, and three tips for this job.</p></div>
+          <div class="empty" id="empty"><h3 style="font-size:22px">Your results appear here</h3><p style="margin:0;max-width:22rem">Score, matched and missing skills, and three tips for this job.</p></div>
 
           <div class="prog" id="prog">
             <h3>Analyzing your resume…</h3>
@@ -355,10 +354,10 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
               </div>
             </div>
             <div class="cols">
-              <div class="box"><div class="pv-label">✅ Matched skills</div><div class="chips" id="matched"></div></div>
-              <div class="box"><div class="pv-label">❌ Missing skills</div><div class="chips" id="missing"></div></div>
+              <div class="box"><div class="pv-label">Matched skills</div><div class="chips" id="matched"></div></div>
+              <div class="box"><div class="pv-label">Missing skills</div><div class="chips" id="missing"></div></div>
             </div>
-            <div class="pv-label">💡 3 tips to improve</div>
+            <div class="pv-label">3 tips to improve</div>
             <ol class="tips" id="tips"></ol>
             <details><summary>Text read from your resume</summary><pre id="text"></pre></details>
             <button class="btn btn-ghost btn-sm again" id="again" type="button">Analyze another</button>
