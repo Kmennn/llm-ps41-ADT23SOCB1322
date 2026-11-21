@@ -27,6 +27,22 @@ def health():
 
 @app.post("/api/analyze")
 def analyze_route():
+    # Preferred path: the browser extracts the PDF text (pdf.js) and sends JSON,
+    # so the file itself never leaves the user's computer. Vercel's firewall
+    # also blocked large multipart PDF uploads with a 403.
+    if request.is_json:
+        body = request.get_json(silent=True) or {}
+        resume_text = str(body.get("resume_text") or "").strip()
+        jd_text = str(body.get("jd") or "").strip()
+        if not resume_text or not jd_text:
+            return jsonify({"error": "Please upload a resume and paste a job description."}), 400
+        try:
+            result = analyze(resume_text[:12000], jd_text[:6000])
+        except Exception as err:
+            return jsonify({"error": f"Analysis failed: {err}"}), 502
+        result["resume_text"] = resume_text[:3000]
+        return jsonify(result)
+
     upload = request.files.get("resume")
     jd_text = (request.form.get("jd") or "").strip()
     if not upload or not jd_text:

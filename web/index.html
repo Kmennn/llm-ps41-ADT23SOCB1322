@@ -402,6 +402,7 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e" crossorigin="anonymous" defer></script>
 <script>
 const $ = id => document.getElementById(id);
 const SAMPLES = {
@@ -418,6 +419,29 @@ input.addEventListener("change", showFile);
 ["dragenter","dragover"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add("over"); }));
 ["dragleave","drop"].forEach(e => drop.addEventListener(e, () => drop.classList.remove("over")));
 drop.addEventListener("drop", ev => { ev.preventDefault(); if (ev.dataTransfer.files[0]) { input.files = ev.dataTransfer.files; showFile(); } });
+
+// Read the resume in the browser: the PDF never leaves this computer, only its text is sent.
+async function readResume(file) {
+  if (file.size > 5 * 1024 * 1024) throw new Error("File is larger than 5 MB.");
+  if (/\.txt$/i.test(file.name)) return await file.text();
+  if (!window.pdfjsLib) throw new Error("PDF reader did not load. Check your connection and refresh.");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+  const pages = [];
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const content = await (await pdf.getPage(n)).getTextContent();
+    let lastY = null, line = [], lines = [];
+    for (const it of content.items) {
+      const y = Math.round(it.transform[5]);
+      if (lastY !== null && Math.abs(y - lastY) > 2) { lines.push(line.join(" ")); line = []; }
+      if (it.str.trim()) line.push(it.str.trim());
+      lastY = y;
+    }
+    lines.push(line.join(" "));
+    pages.push(lines.filter(Boolean).join("\n"));
+  }
+  return pages.join("\n\n");
+}
 
 function msg(text, cls) { const m = $("msg"); m.textContent = text; m.className = "msg " + cls; }
 function view(which) { ["empty","prog","res"].forEach(id => $(id).style.display = id === which ? (id === "prog" ? "flex" : id === "empty" ? "flex" : "block") : "none"); }
@@ -448,7 +472,10 @@ $("form").addEventListener("submit", async e => {
   startProgress();
   if (innerWidth < 960) $("prog").scrollIntoView({ behavior: "smooth", block: "center" });
   try {
-    const res = await fetch("/api/analyze", { method: "POST", body: new FormData($("form")) });
+    const resumeText = await readResume(input.files[0]);
+    if (!resumeText.trim()) throw new Error("No text found in this PDF. Is it a scanned image? Try a text-based PDF.");
+    const res = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resume_text: resumeText, jd: $("jd").value }) });
     let data; try { data = await res.json(); } catch { throw new Error("The server took too long or returned an error. Please try again."); }
     if (!res.ok) throw new Error(data.error || "Request failed");
     stopProgress();
