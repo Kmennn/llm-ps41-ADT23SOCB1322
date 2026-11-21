@@ -3,91 +3,454 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Resume Analyzer | PS 41</title>
+<title>Resume Analyzer | Know why your resume gets rejected</title>
+<meta name="description" content="Upload your resume, paste a job description, and get a match score, missing skills and 3 tips in under a minute. Runs on a private Qwen2.5-14B model on a college GPU.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --navy:#1e3a8a; --accent:#2563eb; --bg:#f8fafc; --card:#fff; --text:#1f2937; --muted:#64748b; --ok:#16a34a; --bad:#dc2626; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
-  header { background:var(--navy); color:#fff; padding:28px 16px; text-align:center; }
-  header h1 { margin:0 0 6px; font-size:clamp(24px,5vw,34px); }
-  header p { margin:0; opacity:.85; }
-  main { max-width:820px; margin:24px auto; padding:0 16px; }
-  .card { background:var(--card); border-radius:14px; padding:22px; box-shadow:0 4px 18px rgba(15,23,42,.07); margin-bottom:20px; }
-  label { display:block; font-weight:600; margin:0 0 8px; }
-  input[type=file], textarea { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:10px; font:inherit; }
-  textarea { min-height:180px; resize:vertical; }
-  .row { margin-bottom:18px; }
-  button { background:var(--accent); color:#fff; border:0; border-radius:10px; padding:12px 26px; font-size:16px; font-weight:600; cursor:pointer; transition:transform .12s ease-out; }
-  button:active { transform:scale(.97); }
-  button:disabled { opacity:.6; cursor:wait; }
-  .msg { padding:12px 14px; border-radius:10px; margin-top:14px; display:none; }
-  .warn { background:#fef9c3; } .err { background:#fee2e2; }
-  .bar { height:12px; background:#e2e8f0; border-radius:8px; overflow:hidden; margin:10px 0 14px; }
-  .bar div { height:100%; background:var(--accent); width:0; transition:width .6s ease-out; }
-  .cols { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
-  @media (max-width:600px){ .cols { grid-template-columns:1fr; } }
-  ul, ol { margin:6px 0 0; padding-left:22px; } li { margin:4px 0; }
-  details { margin-top:14px; } pre { white-space:pre-wrap; background:#f1f5f9; padding:12px; border-radius:8px; font-size:13px; }
-  .muted { color:var(--muted); font-size:14px; }
-  footer { text-align:center; color:var(--muted); font-size:13px; padding:20px 16px 36px; }
+:root{
+  --navy:#1b1446; --ink:#2a2155; --muted:#5b4f78; --line:#e4def7; --soft:#faf8ff;
+  --violet:#6d28d9; --violet-2:#8b5cf6; --orange:#f86d60; --orange-2:#ec5a4c;
+  --ok:#059669; --bad:#dc2626; --warn:#b45309;
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --shadow:0 1px 2px rgb(40 25 80/.04),0 16px 40px -20px rgb(40 25 80/.16);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:#fff;-webkit-font-smoothing:antialiased;line-height:1.55}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:650;color:var(--navy);letter-spacing:-.025em;margin:0}
+em.v{font-style:italic;font-weight:500;color:var(--violet)}
+.mono{font-family:"JetBrains Mono",monospace}
+
+/* nav */
+.nav{position:sticky;top:12px;z-index:50;display:flex;justify-content:center;padding:0 16px;margin-top:12px}
+.pill{display:flex;align-items:center;gap:4px;padding:6px 6px 6px 16px;border-radius:999px;background:rgb(255 255 255/.72);
+  border:1px solid rgb(255 255 255/.6);box-shadow:0 10px 30px -12px rgb(40 25 80/.25),inset 0 0 0 1px rgb(40 25 80/.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--navy);text-decoration:none;margin-right:10px;white-space:nowrap}
+.brand i{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-style:normal;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--violet),#ec4899)}
+.navlink{padding:8px 12px;border-radius:999px;font-size:14px;font-weight:500;text-decoration:none;color:var(--ink);transition:color .2s ease,background-color .2s ease}
+@media (hover:hover) and (pointer:fine){.navlink:hover{color:var(--violet);background:rgb(139 92 246/.08)}}
+.navcta{margin-left:6px}
+@media (max-width:720px){.navlink.hide-sm{display:none}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:10px;border:0;border-radius:999px;font:600 16px Inter,sans-serif;padding:14px 26px;cursor:pointer;text-decoration:none;
+  transition:transform .16s var(--ease-out),background-color .2s ease,box-shadow .2s ease}
+.btn:active{transform:scale(.97)}
+.btn-orange{background:var(--orange);color:#fff;box-shadow:inset 0 0 0 1.5px #fcb9b2,0 10px 24px -10px rgb(248 109 96/.7)}
+.btn-ghost{background:rgb(255 255 255/.55);color:var(--navy);box-shadow:inset 0 0 0 1px rgb(40 25 80/.12)}
+.btn-sm{padding:9px 16px;font-size:14px}
+.btn .arr{display:inline-block;transition:transform .2s var(--ease-out)}
+@media (hover:hover) and (pointer:fine){.btn-orange:hover{background:var(--orange-2)}.btn:hover .arr{transform:translateX(3px)}.btn-ghost:hover{background:#fff}}
+.btn:disabled{opacity:.7;cursor:progress}
+
+/* hero */
+.hero{position:relative;overflow:hidden;margin-top:-76px;padding:150px 0 0;background:linear-gradient(to bottom,#bac4ff 0%,#b6cff6 45%,#c5e8f0 85%,#fff 100%)}
+.hero::before{content:"";position:absolute;inset:-20% -10% auto;height:120%;pointer-events:none;
+  background:radial-gradient(40% 35% at 18% 18%,rgb(255 200 58/.35),transparent 70%),radial-gradient(35% 30% at 85% 10%,rgb(110 229 194/.35),transparent 70%),radial-gradient(45% 40% at 60% 30%,rgb(255 0 138/.12),transparent 70%);filter:blur(10px)}
+.hero-grid{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;padding-bottom:90px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--violet);background:rgb(255 255 255/.6);padding:6px 12px;border-radius:999px;box-shadow:inset 0 0 0 1px rgb(109 40 217/.15);margin-bottom:22px}
+.eyebrow b{width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 0 4px rgb(16 185 129/.18)}
+.hero h1{font-size:clamp(38px,5.6vw,64px);line-height:1.06;margin-bottom:22px;text-wrap:balance}
+.hero p.lead{font-size:clamp(17px,1.6vw,19px);color:#4a3f6b;max-width:34rem;margin:0 0 32px;text-wrap:pretty}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.trust{margin-top:34px;display:flex;flex-wrap:wrap;gap:18px;font-size:14px;color:#4a3f6b}
+.trust span{display:inline-flex;align-items:center;gap:6px}
+
+/* hero preview card */
+.preview{position:relative;border-radius:28px;padding:10px;background:rgb(255 255 255/.35);box-shadow:0 30px 80px -30px rgb(40 25 80/.45),inset 0 0 0 1px rgb(255 255 255/.6)}
+.preview-in{border-radius:20px;background:#fff;padding:24px;box-shadow:inset 0 0 0 1px rgb(40 25 80/.06)}
+.pv-top{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.ring{--p:85;width:92px;height:92px;flex:none;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--violet) calc(var(--p)*1%),#ede9fe 0)}
+.ring::after{content:attr(data-v);width:72px;height:72px;border-radius:50%;background:#fff;display:grid;place-items:center;font:650 26px Fraunces,serif;color:var(--navy)}
+.pv-title{font:600 15px Inter;color:var(--navy)} .pv-sub{font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
+.chip{font-size:12.5px;font-weight:500;padding:5px 10px;border-radius:999px}
+.chip.ok{background:#ecfdf5;color:#047857}.chip.no{background:#fef2f2;color:#b91c1c}.chip.gh{background:#fff7ed;color:#9a3412}
+.pv-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6d5f8f}
+.pv-tip{font-size:13.5px;color:var(--ink);padding:9px 12px;border-radius:12px;background:var(--soft);margin-top:6px}
+.float{position:absolute;right:-14px;bottom:-18px;background:var(--navy);color:#fff;border-radius:16px;padding:12px 16px;font-size:13px;box-shadow:0 18px 40px -18px rgb(27 20 70/.8)}
+.float b{display:block;font:500 12px "JetBrains Mono";color:#c4b5fd}
+
+/* sections */
+section{padding:96px 0}
+.sec-head{max-width:40rem;margin-bottom:44px}
+.sec-head h2{font-size:clamp(30px,3.6vw,44px);line-height:1.1;margin-bottom:14px}
+.sec-head p{font-size:17px;color:var(--muted);margin:0}
+.soft{background:var(--soft)}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{border-radius:24px;padding:30px;background:#fff;box-shadow:var(--shadow)}
+.card .n{font:500 13px "JetBrains Mono";color:var(--violet);margin-bottom:16px;display:block}
+.card h3{font-size:24px;margin-bottom:10px}
+.card p{margin:0;color:var(--muted)}
+.tint-a{background:#e3f2f8}.tint-b{background:#ece9ff}
+
+.feat{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+.feat li{list-style:none;border-top:1px solid var(--line);padding-top:20px}
+.feat .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:#ede9fe;color:var(--violet);font-size:18px;margin-bottom:14px}
+.feat h3{font:600 17px Inter;color:var(--navy);margin-bottom:6px;letter-spacing:0}
+.feat p{margin:0;font-size:15px;color:var(--muted)}
+ul.feat{padding:0;margin:0}
+
+/* dark tech section */
+.dark{position:relative;overflow:hidden;background:#1e1442;color:#fff}
+.dark::before{content:"";position:absolute;inset:0;background:radial-gradient(55% 75% at 100% 100%,rgb(139 92 246/.35),transparent),radial-gradient(40% 60% at 0% 0%,rgb(236 72 153/.15),transparent);pointer-events:none}
+.dark h2{color:#fff}.dark .sec-head p{color:rgb(255 255 255/.7)}
+.pipe{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:1px;border-radius:24px;overflow:hidden;background:rgb(255 255 255/.1);border:1px solid rgb(255 255 255/.1)}
+.pipe div{background:#231850;padding:24px 18px;min-height:150px}
+.pipe b{display:block;font:500 12px "JetBrains Mono";color:#c4b5fd;margin-bottom:10px}
+.pipe h4{margin:0 0 6px;font:600 16px Inter}
+.pipe p{margin:0;font-size:14px;color:rgb(255 255 255/.65)}
+.stats{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:48px}
+.stats dd{margin:0;font:650 clamp(30px,3.4vw,42px) Fraunces,serif;color:#c4b5fd}
+.stats dt{font-size:14px;color:rgb(255 255 255/.7)}
+.stats div{display:flex;flex-direction:column-reverse}
+
+/* analyzer */
+.app{display:grid;grid-template-columns:.9fr 1.1fr;gap:20px;align-items:start}
+.panel{border-radius:28px;padding:10px;background:linear-gradient(135deg,#ece9ff,#e3f2f8)}
+.panel-in{border-radius:20px;background:#fff;padding:26px;box-shadow:inset 0 0 0 1px rgb(40 25 80/.06)}
+label.l{display:block;font-weight:600;color:var(--navy);margin-bottom:8px;font-size:15px}
+.drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;min-height:140px;padding:18px;border-radius:18px;
+  border:1.5px dashed #c4b5fd;background:var(--soft);cursor:pointer;transition:border-color .2s ease,background-color .2s ease}
+.drop.over{border-color:var(--violet);background:#f3efff}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop .big{font-size:26px}
+.drop small{color:var(--muted)}
+.file{display:none;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;background:#ecfdf5;color:#065f46;font-size:14px;font-weight:500}
+textarea{width:100%;min-height:200px;resize:vertical;padding:14px;border-radius:16px;border:1px solid var(--line);font:15px Inter;color:var(--ink);background:#fff;transition:border-color .2s ease,box-shadow .2s ease}
+textarea:focus{outline:0;border-color:var(--violet-2);box-shadow:0 0 0 4px rgb(139 92 246/.15)}
+.row{margin-bottom:20px}
+.samples{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.samples button{border:0;background:#f1edff;color:var(--violet);font:500 13px Inter;padding:6px 10px;border-radius:999px;cursor:pointer;transition:background-color .2s ease,transform .16s var(--ease-out)}
+.samples button:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){.samples button:hover{background:#e6e0fe}}
+.go{width:100%;justify-content:center}
+.msg{display:none;margin-top:14px;padding:12px 14px;border-radius:12px;font-size:14px}
+.msg.warn{display:block;background:#fef9c3;color:#713f12}.msg.err{display:block;background:#fee2e2;color:#7f1d1d}
+
+.out{min-height:520px}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;min-height:470px;color:var(--muted)}
+.empty .big{font-size:40px}
+.prog{display:none;flex-direction:column;gap:12px;min-height:470px;justify-content:center;padding:0 10px}
+.prog h3{font-size:24px;margin-bottom:6px}
+.stp{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--soft);color:var(--muted);font-size:15px;transition:background-color .3s ease,color .3s ease}
+.stp i{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid #d4c4fd;display:grid;place-items:center;font-style:normal;font-size:12px}
+.stp.on{background:#f3efff;color:var(--navy)} .stp.on i{border-color:var(--violet);border-top-color:transparent;animation:spin .8s linear infinite}
+.stp.done{color:var(--navy)} .stp.done i{background:var(--violet);border-color:var(--violet);color:#fff;animation:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.timer{font:500 13px "JetBrains Mono";color:var(--muted);margin-top:4px}
+
+.res{display:none}
+.res-top{display:flex;gap:20px;align-items:center;margin-bottom:18px}
+.res .ring{width:120px;height:120px;--p:0;transition:--p 1s var(--ease-out)}
+.res .ring::after{width:94px;height:94px;font-size:34px}
+.verdict{display:inline-block;font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;margin-bottom:6px}
+.v-strong{background:#ecfdf5;color:#047857}.v-good{background:#eff6ff;color:#1d4ed8}.v-partial{background:#fff7ed;color:#9a3412}.v-weak{background:#fef2f2;color:#b91c1c}
+.res-sum{margin:0;color:var(--ink)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+.box{border-radius:18px;padding:16px;background:var(--soft)}
+.tips{counter-reset:t;padding:0;margin:8px 0 0;list-style:none}
+.tips li{counter-increment:t;position:relative;padding:12px 14px 12px 46px;border-radius:14px;background:var(--soft);margin-bottom:8px}
+.tips li::before{content:counter(t);position:absolute;left:12px;top:11px;width:24px;height:24px;border-radius:8px;background:var(--violet);color:#fff;display:grid;place-items:center;font:600 13px Inter}
+details{margin-top:12px;border-radius:14px;background:var(--soft);padding:12px 14px}
+summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--navy)}
+pre{white-space:pre-wrap;font:13px/1.5 "JetBrains Mono";color:var(--muted);margin:10px 0 0}
+.again{margin-top:16px}
+@property --p{syntax:"<number>";inherits:false;initial-value:0}
+
+/* closing + footer */
+.closing{text-align:center;background:linear-gradient(to bottom,#bac4ff,#b6cff6 55%,#c5e8f0);padding:100px 0 110px}
+.closing h2{font-size:clamp(32px,4.4vw,48px);margin-bottom:14px}
+.closing p{color:#4a3f6b;font-size:18px;margin:0 0 28px}
+footer{background:#140e33;color:#a59ccc;font-size:14px;padding:40px 0}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:center}
+footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
+
+/* reveal on scroll */
+.rv{opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease-out),transform .6s var(--ease-out)}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:960px){
+  .hero-grid,.app{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .feat{grid-template-columns:1fr 1fr}
+  .pipe{grid-template-columns:1fr 1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .float{right:10px}
+}
+@media (max-width:560px){
+  section{padding:70px 0}
+  .feat,.cols{grid-template-columns:1fr}
+  .pipe{grid-template-columns:1fr}
+  .res-top{flex-direction:column;align-items:flex-start}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{animation:none!important}
+  .rv{opacity:1;transform:none;transition:none}
+  .btn,.btn .arr{transition:background-color .2s ease}
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>📄 Resume Analyzer</h1>
-  <p>Compare your resume with a job description. Powered by a local LLM on the MIT ADT AI lab GPU.</p>
-</header>
-<main>
-  <form class="card" id="form">
-    <div class="row">
-      <label for="resume">Upload your resume (PDF)</label>
-      <input type="file" id="resume" name="resume" accept=".pdf,.txt">
-    </div>
-    <div class="row">
-      <label for="jd">Paste the job description</label>
-      <textarea id="jd" name="jd" placeholder="e.g. Backend Developer (Fresher). Required: Python, Django or FastAPI, REST APIs..."></textarea>
-    </div>
-    <button type="submit" id="go">Analyze</button>
-    <div class="msg" id="msg"></div>
-  </form>
 
-  <section class="card" id="result" hidden>
-    <h2 id="score" style="margin:0">Match score</h2>
-    <div class="bar"><div id="fill"></div></div>
-    <p id="summary"></p>
-    <div class="cols">
-      <div><strong>✅ Matched skills</strong><ul id="matched"></ul></div>
-      <div><strong>❌ Missing skills</strong><ul id="missing"></ul></div>
+<nav class="nav">
+  <div class="pill">
+    <a class="brand" href="#top"><i>R</i>Resume Analyzer</a>
+    <a class="navlink hide-sm" href="#how">How it works</a>
+    <a class="navlink hide-sm" href="#tech">Technology</a>
+    <a class="navlink hide-sm" href="https://github.com/Kmennn/llm-ps41-ADT23SOCB1322">GitHub</a>
+    <a class="btn btn-orange btn-sm navcta" href="#analyze">Try it <span class="arr">→</span></a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><b></b>Live on a college GPU · Qwen2.5-14B</span>
+      <h1>Know why your resume<br><em class="v">gets rejected</em></h1>
+      <p class="lead">Upload your resume and paste the job description. In under a minute you get a match score, the skills you're missing, and three specific fixes before you hit apply.</p>
+      <div class="cta-row">
+        <a class="btn btn-orange" href="#analyze">Analyze my resume <span class="arr">→</span></a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <div class="trust">
+        <span>🔒 Resume never stored</span>
+        <span>💸 Free, no sign-up</span>
+        <span>🎓 Built at MIT ADT University</span>
+      </div>
     </div>
-    <p style="margin-top:18px"><strong>💡 3 tips to improve</strong></p>
-    <ol id="tips"></ol>
-    <details><summary>Text extracted from your resume</summary><pre id="text"></pre></details>
-  </section>
-</main>
-<footer>LLM Mini Project PS 41 · Virendra Dilip Mahajan · <a href="https://github.com/Kmennn/llm-ps41-ADT23SOCB1322">GitHub</a></footer>
+
+    <div class="preview rv" aria-hidden="true">
+      <div class="preview-in">
+        <div class="pv-top">
+          <div class="ring" data-v="85"></div>
+          <div>
+            <div class="verdict v-strong">Strong fit</div>
+            <div class="pv-title">Backend Developer (Fresher)</div>
+            <div class="pv-sub">resume_python_dev.pdf</div>
+          </div>
+        </div>
+        <div class="pv-label">Matched</div>
+        <div class="chips"><span class="chip ok">Python</span><span class="chip ok">Django</span><span class="chip ok">REST APIs</span><span class="chip ok">PostgreSQL</span><span class="chip ok">Docker</span></div>
+        <div class="pv-label">Missing</div>
+        <div class="chips"><span class="chip no">AWS</span><span class="chip no">Redis</span><span class="chip gh">CI/CD · good to have</span></div>
+        <div class="pv-label">Top tip</div>
+        <div class="pv-tip">Add AWS and Redis to your skills section.</div>
+      </div>
+      <div class="float"><b>POST /api/analyze</b>Example from a real run</div>
+    </div>
+  </div>
+</header>
+
+<section id="how" class="soft">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <h2>Three steps. <em class="v">No guesswork.</em></h2>
+      <p>Most companies filter resumes with an ATS before a human reads them. This shows you what that filter sees.</p>
+    </div>
+    <div class="steps">
+      <div class="card tint-a rv"><span class="n">01 · Upload</span><h3>Drop your resume</h3><p>Any text-based PDF. The text is read on the server and never saved anywhere.</p></div>
+      <div class="card tint-b rv"><span class="n">02 · Paste</span><h3>Add the job description</h3><p>Copy it straight from LinkedIn, Naukri or the company careers page.</p></div>
+      <div class="card tint-b rv"><span class="n">03 · Fix</span><h3>Get your score and fixes</h3><p>A 0 to 100 match score, matched and missing skills, and three tips written for that exact job.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head rv">
+      <h2>Honest feedback, <em class="v">by design</em></h2>
+      <p>The model is told to judge like a strict recruiter, and Python checks every answer before you see it.</p>
+    </div>
+    <ul class="feat">
+      <li class="rv"><div class="ic">◎</div><h3>No invented skills</h3><p>Only facts written in your resume count. If it isn't there, it's missing.</p></li>
+      <li class="rv"><div class="ic">⇄</div><h3>Understands "A or B"</h3><p>"Django or FastAPI" is one requirement. Having either one is enough.</p></li>
+      <li class="rv"><div class="ic">⚖</div><h3>Required beats nice-to-have</h3><p>Missing a bonus skill won't sink a strong resume below 80.</p></li>
+      <li class="rv"><div class="ic">✓</div><h3>Checked output</h3><p>Score clamped to 0-100, exactly 3 tips, and a retry if the model's reply is broken.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section id="tech" class="dark">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <h2>Your own AI, <em class="v" style="color:#c4b5fd">not a paid API</em></h2>
+      <p>The model runs on an NVIDIA H200 GPU in our college AI lab. The website on Vercel reaches it through a private, key-protected tunnel.</p>
+    </div>
+    <div class="pipe rv">
+      <div><b>01</b><h4>Vercel</h4><p>Upload page and a Flask API function</p></div>
+      <div><b>02</b><h4>PyPDF2</h4><p>Reads the text out of your PDF</p></div>
+      <div><b>03</b><h4>Secure tunnel</h4><p>HTTPS with a secret API key</p></div>
+      <div><b>04</b><h4>Qwen2.5-14B</h4><p>llama.cpp on an H200 GPU slice</p></div>
+      <div><b>05</b><h4>Validator</h4><p>JSON checks before you see a result</p></div>
+    </div>
+    <dl class="stats">
+      <div class="rv"><dt>parameters in the model</dt><dd>14.7B</dd></div>
+      <div class="rv"><dt>of 5 test cases in the expected band</dt><dd>5/5</dd></div>
+      <div class="rv"><dt>typical time per analysis</dt><dd>~40s</dd></div>
+      <div class="rv"><dt>cost to you</dt><dd>₹0</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section id="analyze" class="soft">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <h2>Try it on <em class="v">your resume</em></h2>
+      <p>Takes about 40 seconds. Keep this tab open while the model reads.</p>
+    </div>
+    <div class="app">
+      <form class="panel" id="form" novalidate>
+        <div class="panel-in">
+          <div class="row">
+            <label class="l" for="resume">Resume</label>
+            <div class="drop" id="drop">
+              <input type="file" id="resume" name="resume" accept=".pdf,.txt">
+              <span class="big">📄</span>
+              <strong>Drop your PDF here or click to choose</strong>
+              <small>PDF or TXT, up to 5 MB</small>
+            </div>
+            <div class="file" id="file"><span>✓</span><span id="fname"></span></div>
+          </div>
+          <div class="row">
+            <label class="l" for="jd">Job description</label>
+            <textarea id="jd" name="jd" placeholder="Paste the full job description here..."></textarea>
+            <div class="samples"><span class="pv-sub" style="align-self:center">Try a sample:</span>
+              <button type="button" data-jd="backend">Backend developer</button>
+              <button type="button" data-jd="data">Data analyst</button>
+              <button type="button" data-jd="react">Frontend (React)</button>
+            </div>
+          </div>
+          <button class="btn btn-orange go" id="go" type="submit">Analyze resume <span class="arr">→</span></button>
+          <div class="msg" id="msg"></div>
+        </div>
+      </form>
+
+      <div class="panel out">
+        <div class="panel-in" style="min-height:500px">
+          <div class="empty" id="empty"><span class="big">✨</span><h3 style="font-size:22px">Your results appear here</h3><p style="margin:0;max-width:22rem">Score, matched and missing skills, and three tips for this job.</p></div>
+
+          <div class="prog" id="prog">
+            <h3>Analyzing your resume…</h3>
+            <div class="stp" data-s="0"><i></i>Reading the PDF</div>
+            <div class="stp" data-s="1"><i></i>Sending to Qwen2.5-14B on the lab GPU</div>
+            <div class="stp" data-s="2"><i></i>Comparing skills with the job description</div>
+            <div class="stp" data-s="3"><i></i>Checking the answer and writing tips</div>
+            <div class="timer" id="timer">0s</div>
+          </div>
+
+          <div class="res" id="res">
+            <div class="res-top">
+              <div class="ring" id="ring" data-v="0"></div>
+              <div>
+                <span class="verdict" id="verdict"></span>
+                <h3 id="score" style="font-size:26px;margin-bottom:6px"></h3>
+                <p class="res-sum" id="summary"></p>
+              </div>
+            </div>
+            <div class="cols">
+              <div class="box"><div class="pv-label">✅ Matched skills</div><div class="chips" id="matched"></div></div>
+              <div class="box"><div class="pv-label">❌ Missing skills</div><div class="chips" id="missing"></div></div>
+            </div>
+            <div class="pv-label">💡 3 tips to improve</div>
+            <ol class="tips" id="tips"></ol>
+            <details><summary>Text read from your resume</summary><pre id="text"></pre></details>
+            <button class="btn btn-ghost btn-sm again" id="again" type="button">Analyze another</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap rv">
+    <h2>Apply with a resume that <em class="v">fits the job</em></h2>
+    <p>Free. Private. Under a minute.</p>
+    <a class="btn btn-orange" href="#analyze">Analyze my resume <span class="arr">→</span></a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <span>LLM Mini Project · PS 41 · Virendra Dilip Mahajan · MIT ADT University, Pune</span>
+    <span><a href="https://github.com/Kmennn/llm-ps41-ADT23SOCB1322">GitHub</a> · <a href="https://kmennn.github.io/Virendra-Mahajan/">Portfolio</a></span>
+  </div>
+</footer>
+
 <script>
 const $ = id => document.getElementById(id);
-function show(text, cls) { const m = $("msg"); m.textContent = text; m.className = "msg " + cls; m.style.display = "block"; }
-function fill(id, items) { const el = $(id); el.innerHTML = ""; (items.length ? items : ["(none)"]).forEach(t => { const li = document.createElement("li"); li.textContent = t; el.appendChild(li); }); }
+const SAMPLES = {
+  backend: "Backend Developer (Fresher). Required: Python, Django or FastAPI, REST APIs, PostgreSQL, Git, Docker. Good to have: AWS, Redis, unit testing with pytest, CI/CD.",
+  data: "Data Analyst (Fresher). Required: SQL, Excel, Python (Pandas), data visualization with Power BI or Tableau, statistics basics. Good to have: Google Analytics, A/B testing.",
+  react: "Frontend Developer (React). Required: JavaScript, React, HTML, CSS, REST API integration, Git. Good to have: TypeScript, Next.js, Tailwind CSS, Jest."
+};
+document.querySelectorAll("[data-jd]").forEach(b => b.onclick = () => { $("jd").value = SAMPLES[b.dataset.jd]; $("jd").focus(); });
+
+// file pick + drag and drop
+const drop = $("drop"), input = $("resume");
+function showFile() { const f = input.files[0]; if (!f) return; $("fname").textContent = `${f.name} · ${(f.size/1024).toFixed(0)} KB`; $("file").style.display = "flex"; }
+input.addEventListener("change", showFile);
+["dragenter","dragover"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(e => drop.addEventListener(e, () => drop.classList.remove("over")));
+drop.addEventListener("drop", ev => { ev.preventDefault(); if (ev.dataTransfer.files[0]) { input.files = ev.dataTransfer.files; showFile(); } });
+
+function msg(text, cls) { const m = $("msg"); m.textContent = text; m.className = "msg " + cls; }
+function view(which) { ["empty","prog","res"].forEach(id => $(id).style.display = id === which ? (id === "prog" ? "flex" : id === "empty" ? "flex" : "block") : "none"); }
+function chips(id, items, kind) {
+  const el = $(id); el.innerHTML = "";
+  if (!items.length) { el.innerHTML = '<span class="pv-sub">(none)</span>'; return; }
+  items.forEach(t => { const s = document.createElement("span"); const good = /good to have/i.test(t);
+    s.className = "chip " + (kind === "ok" ? "ok" : good ? "gh" : "no"); s.textContent = t.replace(/\s*\(good to have\)/i, good ? " · good to have" : ""); el.appendChild(s); });
+}
+function verdictOf(s) { return s >= 80 ? ["Strong fit","v-strong"] : s >= 60 ? ["Good fit","v-good"] : s >= 40 ? ["Partial fit","v-partial"] : ["Weak fit","v-weak"]; }
+
+let tick, stepT;
+function startProgress() {
+  view("prog"); const t0 = Date.now(); const steps = [...document.querySelectorAll(".stp")];
+  steps.forEach(s => s.className = "stp"); let i = 0; steps[0].classList.add("on");
+  const at = [2, 6, 22]; // seconds when each next step starts (approximate)
+  tick = setInterval(() => {
+    const sec = Math.floor((Date.now() - t0) / 1000); $("timer").textContent = sec + "s";
+    while (i < at.length && sec >= at[i]) { steps[i].className = "stp done"; i++; steps[i].classList.add("on"); }
+  }, 250);
+}
+function stopProgress() { clearInterval(tick); document.querySelectorAll(".stp").forEach(s => s.className = "stp done"); }
+
 $("form").addEventListener("submit", async e => {
-  e.preventDefault();
-  $("msg").style.display = "none";
-  if (!$("resume").files[0] || !$("jd").value.trim()) { show("Please upload a resume and paste a job description.", "warn"); return; }
-  $("go").disabled = true; $("go").textContent = "Reading resume and asking the LLM...";
+  e.preventDefault(); $("msg").className = "msg";
+  if (!input.files[0] || !$("jd").value.trim()) { msg("Please add a resume and a job description.", "warn"); return; }
+  const go = $("go"); go.disabled = true; go.firstChild.textContent = "Analyzing… ";
+  startProgress();
+  if (innerWidth < 960) $("prog").scrollIntoView({ behavior: "smooth", block: "center" });
   try {
     const res = await fetch("/api/analyze", { method: "POST", body: new FormData($("form")) });
-    const data = await res.json();
+    let data; try { data = await res.json(); } catch { throw new Error("The server took too long or returned an error. Please try again."); }
     if (!res.ok) throw new Error(data.error || "Request failed");
-    $("score").textContent = `Match score: ${data.match_score}/100`;
-    $("summary").textContent = data.summary;
-    fill("matched", data.matched_skills); fill("missing", data.missing_skills); fill("tips", data.tips);
+    stopProgress();
+    const s = data.match_score, [vt, vc] = verdictOf(s);
+    $("verdict").textContent = vt; $("verdict").className = "verdict " + vc;
+    $("score").textContent = `Match score ${s}/100`; $("summary").textContent = data.summary;
+    chips("matched", data.matched_skills, "ok"); chips("missing", data.missing_skills, "no");
+    const tl = $("tips"); tl.innerHTML = ""; data.tips.forEach(t => { const li = document.createElement("li"); li.textContent = t; tl.appendChild(li); });
     $("text").textContent = data.resume_text || "";
-    $("result").hidden = false;
-    requestAnimationFrame(() => $("fill").style.width = data.match_score + "%");
-    $("result").scrollIntoView({ behavior: "smooth" });
-  } catch (err) { show(err.message, "err"); }
-  finally { $("go").disabled = false; $("go").textContent = "Analyze"; }
+    const ring = $("ring"); ring.dataset.v = s; ring.style.setProperty("--p", 0);
+    view("res"); requestAnimationFrame(() => requestAnimationFrame(() => ring.style.setProperty("--p", s)));
+  } catch (err) { stopProgress(); view("empty"); msg(err.message, "err"); }
+  finally { go.disabled = false; go.firstChild.textContent = "Analyze resume "; }
 });
+$("again").onclick = () => { view("empty"); input.value = ""; $("file").style.display = "none"; $("jd").value = ""; $("form").scrollIntoView({ behavior: "smooth" }); };
+
+// reveal on scroll
+const io = new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) { x.target.classList.add("in"); io.unobserve(x.target); } }), { rootMargin: "0px 0px -60px 0px" });
+document.querySelectorAll(".rv").forEach((el, i) => { el.style.transitionDelay = (i % 4) * 60 + "ms"; io.observe(el); });
 </script>
 </body>
 </html>
