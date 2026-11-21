@@ -7,31 +7,28 @@ Students don't know why their resumes get rejected. This app compares a resume
 with a job description and gives a **match score**, **matched skills**,
 **missing skills** and **3 tips** to improve.
 
+## Live website
+**https://resumeanalyzer-flax.vercel.app**
+
 ## How it works
-1. Upload a resume PDF; the text is extracted with PyPDF2.
+1. Upload a resume PDF on the web page; the browser reads its text with pdf.js (the file never leaves your computer).
 2. Paste the job description.
-3. The resume and JD are sent to an LLM with a strict prompt that asks for JSON
-   (`match_score`, `matched_skills`, `missing_skills`, `tips`, `summary`).
-4. The JSON is checked in Python (score clamped to 0-100, one retry if the JSON
-   is broken, "A or B" skills fixed), then shown in Streamlit with `st.progress`.
+3. The text and JD go to a small Flask API on Vercel (`app.py`), which sends them to the LLM with a strict prompt that asks for JSON (`match_score`, `matched_skills`, `missing_skills`, `tips`, `summary`).
+4. The JSON is checked in Python (`analyzer.py`: score clamped to 0-100, one retry if the JSON is broken, "A or B" skills fixed), then shown on the page.
 
-**Model:** Qwen2.5-14B-Instruct (Q4_K_M), served by llama.cpp `llama-server`
-on an NVIDIA RTX PRO 6000 GPU in the MIT ADT Baramati AI lab. The code uses the
-OpenAI-compatible API, so it also works with Groq, OpenAI or Ollama by changing
-`LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
+**Model:** Qwen2.5-14B-Instruct (Q4_K_M), served by llama.cpp `llama-server` on a slice of an NVIDIA H200 GPU in the MIT ADT Baramati AI lab (node 04). Vercel reaches it over HTTPS through a Cloudflare tunnel; the server requires a secret API key. Any OpenAI-compatible endpoint works by changing `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
 
-## How to run
+## How to run locally
 ```
 pip install -r requirements.txt
-# point to any OpenAI-compatible LLM (see .env.example), e.g. Ollama:
-#   set LLM_BASE_URL=http://localhost:11434/v1   set LLM_MODEL=qwen2.5:14b
-streamlit run app.py
+# point to any OpenAI-compatible LLM (see .env.example)
+python app.py        # then open http://127.0.0.1:8541
 ```
 Run the 5 test cases: `python tools/run_tests.py` (results go to `test_results.md`).
 
 ## Screenshots
-![Python developer vs backend JD](screenshots/1_python_dev_vs_backend.png)
-![Mechanical resume vs backend JD](screenshots/3_mechanical_vs_backend.png)
+![Landing page](screenshots/steps/step1_home.png)
+![Result](screenshots/steps/step7_result.png)
 
 ## Test results
 | Resume | Job description | Expected | Score |
