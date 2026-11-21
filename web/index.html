@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Resume Analyzer | Know why your resume gets rejected</title>
 <meta name="description" content="Upload your resume, paste a job description, and get a match score, missing skills and 3 tips in under a minute. Runs on a private Qwen2.5-14B model on a college GPU.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2040%2040%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22lg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%236d28d9%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ec4899%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%2211%22%20fill%3D%22url%28%23lg%29%22/%3E%3Cpath%20d%3D%22M12%209.5h10.2l5.8%205.8V28a2.5%202.5%200%200%201-2.5%202.5h-13.5A2.5%202.5%200%200%201%209.5%2028V12A2.5%202.5%200%200%201%2012%209.5z%22%20fill%3D%22%23fff%22/%3E%3Cpath%20d%3D%22M22.2%209.5v4.3a1.5%201.5%200%200%200%201.5%201.5H28%22%20fill%3D%22%23e9defe%22/%3E%3Cpath%20d%3D%22M13.5%2017.5h6M13.5%2021h8M13.5%2024.5h4.5%22%20stroke%3D%22%23c4b5fd%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2227.5%22%20cy%3D%2227.5%22%20r%3D%227%22%20fill%3D%22%231b1446%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22/%3E%3Cpath%20d%3D%22m24.6%2027.6%202%202%203.8-4%22%20fill%3D%22none%22%20stroke%3D%22%23a7f3d0%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -196,13 +197,31 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
   .rv{opacity:1;transform:none;transition:none}
   .btn,.btn .arr{transition:background-color .2s ease}
 }
+
+.ico{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.logo{width:28px;height:28px;flex:none;display:block}
+.trust span{gap:8px}.trust .ico{width:17px;height:17px;color:var(--violet)}
+.trust span+span::before{display:none}
+.feat .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#ede9fe;color:var(--violet);margin-bottom:14px}
+.feat .ic .ico{width:22px;height:22px}
+.card .cic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgb(255 255 255/.75);color:var(--violet);margin-bottom:18px;box-shadow:inset 0 0 0 1px rgb(109 40 217/.12)}
+.card .cic .ico{width:22px;height:22px}
+.drop .dic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:#fff;color:var(--violet);box-shadow:0 6px 16px -8px rgb(109 40 217/.4);margin-bottom:4px}
+.drop .dic .ico{width:24px;height:24px}
+.empty .eic{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,#ede9fe,#e3f2f8);color:var(--violet);margin-bottom:6px}
+.empty .eic .ico{width:30px;height:30px}
+.pv-label{display:flex;align-items:center;gap:6px}
+.pv-label .ico{width:16px;height:16px}
+.lab-ok{color:#047857}.lab-no{color:#b91c1c}.lab-tip{color:var(--violet)}
+.footlogo{display:inline-flex;align-items:center;gap:10px}.footlogo .logo{width:24px;height:24px}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><path d="M12 14.5v2"/></symbol><symbol id="i-free" viewBox="0 0 24 24"><path d="M3.5 12.2 11.8 3.9a2 2 0 0 1 1.4-.6h5.3a2 2 0 0 1 2 2v5.3a2 2 0 0 1-.6 1.4l-8.3 8.3a2 2 0 0 1-2.8 0L3.5 15a2 2 0 0 1 0-2.8z"/><circle cx="16" cy="8" r="1.4"/></symbol><symbol id="i-cap" viewBox="0 0 24 24"><path d="M2.5 9.5 12 5l9.5 4.5L12 14z"/><path d="M6.5 11.6v4.2c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3v-4.2"/><path d="M21.5 9.5v5"/></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M14 3.5H7.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V8z"/><path d="M14 3.5V8h4.5"/><path d="M12 17v-6M9.5 13.5 12 11l2.5 2.5"/></symbol><symbol id="i-paste" viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16" rx="2.5"/><path d="M9 4.5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v.5"/><path d="M8.5 10h7M8.5 13.5h7M8.5 17h4"/></symbol><symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" /></symbol><symbol id="i-facts" viewBox="0 0 24 24"><path d="M13.5 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h4"/><path d="M13.5 3.5V8H18v2.5"/><circle cx="16" cy="16" r="3.5"/><path d="m18.6 18.6 2.4 2.4"/></symbol><symbol id="i-branch" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.2"/><circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="9" r="2.2"/><path d="M6 8.2v7.6M18 11.2c0 3-3 4.3-6 4.8-2.2.3-3.6 1-4.6 2"/></symbol><symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M8 20h8M5 7h14"/><path d="M5 7 2.5 13a2.6 2.6 0 0 0 5 0z"/><path d="M19 7l-2.5 6a2.6 2.6 0 0 0 5 0z"/></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8 7.5 9.5 4.3-1.5 7.5-5 7.5-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.4-4.6"/></symbol><symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m8.3 12.2 2.5 2.5 4.9-5.1"/></symbol><symbol id="i-miss" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m9.2 9.2 5.6 5.6M14.8 9.2l-5.6 5.6"/></symbol><symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 17.5h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.4 1.1 2.3v1.4h5v-1.4c0-.9.4-1.7 1.1-2.3A6 6 0 0 0 12 3z"/></symbol><symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="m7.5 15 3.5-4 3 2.5 5-6"/></symbol></defs></svg>
 
 <nav class="nav">
   <div class="pill">
-    <a class="brand" href="#top"><i>R</i>Resume Analyzer</a>
+    <a class="brand" href="#top"><svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6d28d9"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><path d="M12 9.5h10.2l5.8 5.8V28a2.5 2.5 0 0 1-2.5 2.5h-13.5A2.5 2.5 0 0 1 9.5 28V12A2.5 2.5 0 0 1 12 9.5z" fill="#fff"/><path d="M22.2 9.5v4.3a1.5 1.5 0 0 0 1.5 1.5H28" fill="#e9defe"/><path d="M13.5 17.5h6M13.5 21h8M13.5 24.5h4.5" stroke="#c4b5fd" stroke-width="1.8" stroke-linecap="round"/><circle cx="27.5" cy="27.5" r="7" fill="#1b1446" stroke="#fff" stroke-width="2"/><path d="m24.6 27.6 2 2 3.8-4" fill="none" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Resume Analyzer</a>
     <a class="navlink hide-sm" href="#how">How it works</a>
     <a class="navlink hide-sm" href="#tech">Technology</a>
     <a class="navlink hide-sm" href="https://github.com/Kmennn/llm-ps41-ADT23SOCB1322">GitHub</a>
@@ -220,9 +239,9 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
         <a class="btn btn-ghost" href="#how">See how it works</a>
       </div>
       <div class="trust">
-        <span>Resume never stored</span>
-        <span>Free, no sign-up</span>
-        <span>Built at MIT ADT University</span>
+        <span><svg class="ico"><use href="#i-lock"/></svg>Resume never stored</span>
+        <span><svg class="ico"><use href="#i-free"/></svg>Free, no sign-up</span>
+        <span><svg class="ico"><use href="#i-cap"/></svg>Built at MIT ADT University</span>
       </div>
     </div>
 
@@ -255,9 +274,9 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
       <p>Most companies filter resumes with an ATS before a human reads them. This shows you what that filter sees.</p>
     </div>
     <div class="steps">
-      <div class="card tint-a rv"><span class="n">01 · Upload</span><h3>Drop your resume</h3><p>Any text-based PDF. The text is read on the server and never saved anywhere.</p></div>
-      <div class="card tint-b rv"><span class="n">02 · Paste</span><h3>Add the job description</h3><p>Copy it straight from LinkedIn, Naukri or the company careers page.</p></div>
-      <div class="card tint-b rv"><span class="n">03 · Fix</span><h3>Get your score and fixes</h3><p>A 0 to 100 match score, matched and missing skills, and three tips written for that exact job.</p></div>
+      <div class="card tint-a rv"><div class="cic"><svg class="ico"><use href="#i-upload"/></svg></div><span class="n">01 · Upload</span><h3>Drop your resume</h3><p>Any text-based PDF. The text is read on the server and never saved anywhere.</p></div>
+      <div class="card tint-b rv"><div class="cic"><svg class="ico"><use href="#i-paste"/></svg></div><span class="n">02 · Paste</span><h3>Add the job description</h3><p>Copy it straight from LinkedIn, Naukri or the company careers page.</p></div>
+      <div class="card tint-b rv"><div class="cic"><svg class="ico"><use href="#i-target"/></svg></div><span class="n">03 · Fix</span><h3>Get your score and fixes</h3><p>A 0 to 100 match score, matched and missing skills, and three tips written for that exact job.</p></div>
     </div>
   </div>
 </section>
@@ -269,10 +288,10 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
       <p>The model is told to judge like a strict recruiter, and Python checks every answer before you see it.</p>
     </div>
     <ul class="feat">
-      <li class="rv"><h3>No invented skills</h3><p>Only facts written in your resume count. If it isn't there, it's missing.</p></li>
-      <li class="rv"><h3>Understands "A or B"</h3><p>"Django or FastAPI" is one requirement. Having either one is enough.</p></li>
-      <li class="rv"><h3>Required beats nice-to-have</h3><p>Missing a bonus skill won't sink a strong resume below 80.</p></li>
-      <li class="rv"><h3>Checked output</h3><p>Score clamped to 0-100, exactly 3 tips, and a retry if the model's reply is broken.</p></li>
+      <li class="rv"><div class="ic"><svg class="ico"><use href="#i-facts"/></svg></div><h3>No invented skills</h3><p>Only facts written in your resume count. If it isn't there, it's missing.</p></li>
+      <li class="rv"><div class="ic"><svg class="ico"><use href="#i-branch"/></svg></div><h3>Understands "A or B"</h3><p>"Django or FastAPI" is one requirement. Having either one is enough.</p></li>
+      <li class="rv"><div class="ic"><svg class="ico"><use href="#i-scale"/></svg></div><h3>Required beats nice-to-have</h3><p>Missing a bonus skill won't sink a strong resume below 80.</p></li>
+      <li class="rv"><div class="ic"><svg class="ico"><use href="#i-shield"/></svg></div><h3>Checked output</h3><p>Score clamped to 0-100, exactly 3 tips, and a retry if the model's reply is broken.</p></li>
     </ul>
   </div>
 </section>
@@ -312,7 +331,7 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
             <label class="l" for="resume">Resume</label>
             <div class="drop" id="drop">
               <input type="file" id="resume" name="resume" accept=".pdf,.txt">
-                            <strong>Drop your PDF here or click to choose</strong>
+                            <span class="dic"><svg class="ico"><use href="#i-upload"/></svg></span><strong>Drop your PDF here or click to choose</strong>
               <small>PDF or TXT, up to 5 MB</small>
             </div>
             <div class="file" id="file"><span id="fname"></span></div>
@@ -333,7 +352,7 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
 
       <div class="panel out">
         <div class="panel-in" style="min-height:500px">
-          <div class="empty" id="empty"><h3 style="font-size:22px">Your results appear here</h3><p style="margin:0;max-width:22rem">Score, matched and missing skills, and three tips for this job.</p></div>
+          <div class="empty" id="empty"><div class="eic"><svg class="ico"><use href="#i-chart"/></svg></div><h3 style="font-size:22px">Your results appear here</h3><p style="margin:0;max-width:22rem">Score, matched and missing skills, and three tips for this job.</p></div>
 
           <div class="prog" id="prog">
             <h3>Analyzing your resume…</h3>
@@ -354,10 +373,10 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
               </div>
             </div>
             <div class="cols">
-              <div class="box"><div class="pv-label">Matched skills</div><div class="chips" id="matched"></div></div>
-              <div class="box"><div class="pv-label">Missing skills</div><div class="chips" id="missing"></div></div>
+              <div class="box"><div class="pv-label lab-ok"><svg class="ico"><use href="#i-ok"/></svg>Matched skills</div><div class="chips" id="matched"></div></div>
+              <div class="box"><div class="pv-label lab-no"><svg class="ico"><use href="#i-miss"/></svg>Missing skills</div><div class="chips" id="missing"></div></div>
             </div>
-            <div class="pv-label">3 tips to improve</div>
+            <div class="pv-label lab-tip"><svg class="ico"><use href="#i-bulb"/></svg>3 tips to improve</div>
             <ol class="tips" id="tips"></ol>
             <details><summary>Text read from your resume</summary><pre id="text"></pre></details>
             <button class="btn btn-ghost btn-sm again" id="again" type="button">Analyze another</button>
@@ -378,7 +397,7 @@ footer a{color:#d8d1f5;text-decoration:none} footer a:hover{color:#fff}
 
 <footer>
   <div class="wrap foot">
-    <span>LLM Mini Project · PS 41 · Virendra Dilip Mahajan · MIT ADT University, Pune</span>
+    <span class="footlogo"><svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6d28d9"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><path d="M12 9.5h10.2l5.8 5.8V28a2.5 2.5 0 0 1-2.5 2.5h-13.5A2.5 2.5 0 0 1 9.5 28V12A2.5 2.5 0 0 1 12 9.5z" fill="#fff"/><path d="M22.2 9.5v4.3a1.5 1.5 0 0 0 1.5 1.5H28" fill="#e9defe"/><path d="M13.5 17.5h6M13.5 21h8M13.5 24.5h4.5" stroke="#c4b5fd" stroke-width="1.8" stroke-linecap="round"/><circle cx="27.5" cy="27.5" r="7" fill="#1b1446" stroke="#fff" stroke-width="2"/><path d="m24.6 27.6 2 2 3.8-4" fill="none" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>LLM Mini Project · PS 41 · Virendra Dilip Mahajan · MIT ADT University, Pune</span></span>
     <span><a href="https://github.com/Kmennn/llm-ps41-ADT23SOCB1322">GitHub</a> · <a href="https://kmennn.github.io/Virendra-Mahajan/">Portfolio</a></span>
   </div>
 </footer>
