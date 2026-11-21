@@ -46,6 +46,7 @@ def read_resume(file) -> str:
 
 def _parse_json(text: str) -> dict:
     """Models sometimes wrap JSON in ``` fences or add a sentence; keep the {...}."""
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)  # reasoning models
     match = re.search(r"\{.*\}", text, re.S)
     if not match:
         raise ValueError("The model did not return JSON:\n" + text[:300])
