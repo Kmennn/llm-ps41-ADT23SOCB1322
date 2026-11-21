@@ -1,48 +1,51 @@
-"""PS41 Resume Analyzer - Streamlit UI. Run: streamlit run app.py"""
-import streamlit as st
+"""PS41 Resume Analyzer - web app for Vercel (Flask). Local run: python app.py
+The LLM settings come from Vercel environment variables:
+LLM_BASE_URL, LLM_MODEL, LLM_API_KEY."""
+import io
+import os
+import sys
 
-from analyzer import MODEL, analyze, read_resume
+from flask import Flask, jsonify, request, send_from_directory
 
-st.set_page_config(page_title="Resume Analyzer", page_icon="📄")
-st.title("📄 Resume Analyzer")
-st.caption(f"Compare your resume with a job description. Model: {MODEL} (local LLM)")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from analyzer import MODEL, analyze, read_resume  # noqa: E402
 
-resume_file = st.file_uploader("Upload your resume (PDF)", type=["pdf", "txt"])
-jd_text = st.text_area("Paste the job description", height=220)
+app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB upload limit
+PUBLIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 
-if st.button("Analyze", type="primary"):
-    if not resume_file or not jd_text.strip():
-        st.warning("Please upload a resume and paste a job description.")
-    else:
-        with st.spinner("Reading resume and asking the LLM..."):
-            try:
-                resume_text = read_resume(resume_file)
-                if not resume_text:
-                    st.error("No text found in the PDF. Is it a scanned image?")
-                    st.stop()
-                result = analyze(resume_text, jd_text)
-            except Exception as err:
-                st.error(f"Analysis failed: {err}")
-                st.stop()
 
-        score = result["match_score"]
-        st.subheader(f"Match score: {score}/100")
-        st.progress(score / 100)
-        st.write(result["summary"])
+@app.get("/")
+def home():
+    return send_from_directory(PUBLIC, "index.html")
 
-        left, right = st.columns(2)
-        with left:
-            st.markdown("**✅ Matched skills**")
-            for skill in result["matched_skills"] or ["(none)"]:
-                st.markdown(f"- {skill}")
-        with right:
-            st.markdown("**❌ Missing skills**")
-            for skill in result["missing_skills"] or ["(none)"]:
-                st.markdown(f"- {skill}")
 
-        st.markdown("**💡 3 tips to improve**")
-        for i, tip in enumerate(result["tips"], 1):
-            st.markdown(f"{i}. {tip}")
+@app.get("/api/health")
+def health():
+    return jsonify({"ok": True, "model": MODEL})
 
-        with st.expander("Text extracted from your resume"):
-            st.text(resume_text[:3000])
+
+@app.post("/api/analyze")
+def analyze_route():
+    upload = request.files.get("resume")
+    jd_text = (request.form.get("jd") or "").strip()
+    if not upload or not jd_text:
+        return jsonify({"error": "Please upload a resume and paste a job description."}), 400
+    name = (upload.filename or "").lower()
+    if not name.endswith((".pdf", ".txt")):
+        return jsonify({"error": "Only PDF or TXT resumes are supported."}), 400
+    buf = io.BytesIO(upload.read())
+    buf.name = name
+    try:
+        resume_text = read_resume(buf)
+        if not resume_text:
+            return jsonify({"error": "No text found in the PDF. Is it a scanned image?"}), 400
+        result = analyze(resume_text, jd_text)
+    except Exception as err:  # shown to the user, like the Streamlit app
+        return jsonify({"error": f"Analysis failed: {err}"}), 502
+    result["resume_text"] = resume_text[:3000]
+    return jsonify(result)
+
+
+if __name__ == "__main__":
+    app.run(port=8541, debug=True)

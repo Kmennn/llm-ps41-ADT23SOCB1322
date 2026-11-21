@@ -1,0 +1,10 @@
+.git
+venv
+screenshots
+docs
+samples
+tools
+*.docx
+*.pdf
+*.pptx
+test_results*.md
